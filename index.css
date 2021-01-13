@@ -92,3 +92,33 @@
     border-radius: 5px ;
     margin-left: 18px;
 }
+.mapContainer {
+    display: none;
+    position: absolute;
+    width: 1200px;
+    height: 600px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    background-color: antiquewhite;
+    border-radius: 15px;
+    border: 1px solid #666;
+    opacity: 0.9;
+    box-shadow: 2px 2px 3px #999;
+}
+.show {
+    display: block !important;
+}
+.close {
+    display: none;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    /* background-color: black; */
+    right: 380px;
+   top: 182px;
+   border-radius: 50%;
+   opacity: 0.8;
+   /* background-color: #666; */
+   text-align: center;
+}

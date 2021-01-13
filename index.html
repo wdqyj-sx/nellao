@@ -6,6 +6,8 @@
     <script src="./Cesium.js"></script>
     <link href="./Widgets/widgets.css" rel="stylesheet">
     <link rel="stylesheet" href="./index.css">
+    <script type="text/javascript"
+        src="http://api.map.baidu.com/api?v=1.0&type=webgl&ak=krkDooFgQhqdEGDXsDoDbwFrmiTw2Chy"></script>
 </head>
 
 <body>
@@ -18,12 +20,16 @@
             <button class="btn" type="button" onclick="Rain()">降雨</button>
             <button class="btn" onclick="Merge()">视频融合</button>
             <button class="btn" onclick="Video()">监控</button>
-            <button class="btn" onclick="Image()">图片检测</button>
+            <button class="btn" onclick="baiduMap()">地图定位</button>
         </div>
     </header>
     <div class="wrap">
         <div id="cesiumContainer">
         </div>
+        <div id="mapContainer" class="mapContainer">
+            
+        </div>
+        <span class="close" onclick="Close()">X</span>
     </div>
     <video id="trailer" muted autoplay loop crossorigin controls style="display: none;">
         <source src="./video.mp4" type="video/mp4">
@@ -243,9 +249,9 @@
         //控制小车移动
         let s1, s2, s3;
         let flag = false;
-        createCar = () => {
+        createCar = (ran1, ran2) => {
             s1 = setInterval(() => {
-                let radian = Cesium.Math.toRadians(232);
+                let radian = Cesium.Math.toRadians(ran1);
                 let speed = 2;
                 let speedVector = new Cesium.Cartesian3();
                 hpr.heading = radian;
@@ -254,7 +260,7 @@
                 Cesium.Transforms.headingPitchRollToFixedFrame(positions, hpr, Cesium.Ellipsoid.WGS84, fixedFrameTransforms, carPrimitive.modelMatrix);
             }, 100);
             s2 = setInterval(() => {
-                let radian = Cesium.Math.toRadians(232);
+                let radian = Cesium.Math.toRadians(ran1);
                 hpr2.heading = radian;
                 let speed = 2;
                 let speedVector = new Cesium.Cartesian3();
@@ -263,7 +269,7 @@
                 Cesium.Transforms.headingPitchRollToFixedFrame(positions2, hpr2, Cesium.Ellipsoid.WGS84, fixedFrameTransforms2, carPrimitive2.modelMatrix);
             }, 100);
             s3 = setInterval(() => {
-                let radian = Cesium.Math.toRadians(52);
+                let radian = Cesium.Math.toRadians(ran2);
                 hpr3.heading = radian;
                 let speed = 2;
                 let speedVector = new Cesium.Cartesian3();
@@ -273,7 +279,23 @@
                 Cesium.Transforms.headingPitchRollToFixedFrame(positions3, hpr3, Cesium.Ellipsoid.WGS84, fixedFrameTransforms3, carPrimitive3.modelMatrix);
             }, 100);
         }
-        createCar()
+        //232 52
+        var ran1 = 232;
+        var ran2 = 52;
+        createCar(ran1, ran2)
+        //取消定时器
+        clearIn = () => {
+            clearInterval(s1)
+            clearInterval(s2)
+            clearInterval(s3)
+
+        }
+        setInterval(() => {
+            clearIn();
+            ran1 = ran1 + 180;
+            ran2 = ran2 + 180;
+            createCar(ran1, ran2);
+        }, 8000);
         //   setInterval(() => {
         //     clearInterval(s1);
         //     clearInterval(s2);
@@ -343,11 +365,62 @@
                 destination: { x: -2663933.2620123085, y: 5060365.413528941, z: 2816272.8409385844 }
             })
         }
-          function Video() {
+        //定位监控口
+        function Video() {
             viewer.zoomTo(hospitalPin);
             console.log(hospitalPin)
             console.log(1)
         }
+        //显示二维地图
+        function baiduMap() {
+            let baiduMap = document.getElementsByClassName("mapContainer");
+            let close = document.getElementsByClassName("close")
+            // console.log(baiduMap);
+            baiduMap[0].classList.add("show");
+            close[0].classList.add("show");
+        }
+        function Close() {
+            // console.log('一点击')
+            let baiduMap = document.getElementsByClassName("mapContainer");
+            let close = document.getElementsByClassName("close")
+                baiduMap[0].classList.remove("show");
+             close[0].classList.remove("show");     
+        }
+        //设置二维地图
+        var map = new BMapGL.Map("mapContainer");          // 创建地图实例 
+            var point = new BMapGL.Point(117.779651, 26.387905);  // 创建点坐标 
+            map.centerAndZoom(point, 15);                 // 初始化地图，设置中心点坐标和地图级别
+            let neilao1 = new BMapGL.Point(117.777046, 26.369197);
+            let neilao2 = new BMapGL.Point(117.767178, 26.368468);
+            let neilao3 = new BMapGL.Point(117.772262, 26.377321);
+            var marker = new BMapGL.Marker(neilao1);
+            var marker2 = new BMapGL.Marker(neilao2);
+            var marker3 = new BMapGL.Marker(neilao3);
+            map.addOverlay(marker);
+            map.addOverlay(marker2);
+            map.addOverlay(marker3);
+            let opts = {
+                width: 200,
+                height: 50,
+                title: '内涝监控点'
+            }
+            var infoWindow = new BMapGL.InfoWindow("地址：三明市如意湖湿地公园", opts);
+            var infoWindow2 = new BMapGL.InfoWindow("地址：水上乐园便民超市", opts);
+            var infoWindow3 = new BMapGL.InfoWindow("地址：金州美一城", opts);
+
+            // 创建信息窗口对象 
+            marker.addEventListener("click", function () {
+                map.openInfoWindow(infoWindow, neilao1); //开启信息窗口
+            });
+            marker2.addEventListener("click", function () {
+                map.openInfoWindow(infoWindow2, neilao2); //开启信息窗口
+            });
+            marker3.addEventListener("click", function () {
+                map.openInfoWindow(infoWindow3, neilao3); //开启信息窗口
+            });
+            map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+            map.setHeading(64.5);   //设置地图旋转角度
+            map.setTilt(73);       //设置地图的倾斜角度
     </script>
 </body>
 
