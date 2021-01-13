@@ -17,7 +17,7 @@
         title">Cesium内涝视频监测</span>
         <span class="weather">赣州市:晴转多云</span>
         <div class="btn-wrap">
-            <button class="btn" type="button" onclick="Rain()">降雨</button>
+            <button class="btn" type="button" onclick="showRain()">降雨</button>
             <button class="btn" onclick="Merge()">视频融合</button>
             <button class="btn" onclick="Video()">监控</button>
             <button class="btn" onclick="baiduMap()">地图定位</button>
@@ -30,6 +30,10 @@
             
         </div>
         <span class="close" onclick="Close()">X</span>
+        <div class="rainCont">
+            <button class="btn btn-chirld" onclick="">选取区域</button>
+            <button class="btn btn-chirld" onclick="">开始降雨</button>
+        </div>
     </div>
     <video id="trailer" muted autoplay loop crossorigin controls style="display: none;">
         <source src="./video.mp4" type="video/mp4">
@@ -385,6 +389,14 @@
             let close = document.getElementsByClassName("close")
                 baiduMap[0].classList.remove("show");
              close[0].classList.remove("show");     
+        }
+        function showRain() {
+            let rainCont = document.getElementsByClassName("rainCont");
+            if(rainCont[0].classList.length>1){
+                rainCont[0].classList.remove("show")
+            }else {
+                rainCont[0].classList.add("show")
+            }
         }
         //设置二维地图
         var map = new BMapGL.Map("mapContainer");          // 创建地图实例 

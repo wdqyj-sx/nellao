@@ -122,3 +122,22 @@
    /* background-color: #666; */
    text-align: center;
 }
+.rainCont {
+    display: none;
+    position: absolute;
+    width: 250px;
+    height: 60px;
+    background-color: #009688;
+    left: 1105px;
+    top: 100px;
+    border-radius: 10px;
+    border: 1px solid #666;
+    box-shadow: 3px 3px 5px #999;
+    /* padding-left: 1px; */
+}
+.btn-chirld {
+    font-size: 20px;
+    margin-top: 10px;
+    background-color: #5FB878;
+    
+}
