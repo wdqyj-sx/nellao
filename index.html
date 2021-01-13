@@ -5,29 +5,26 @@
     <meta charset="utf-8">
     <script src="./Cesium.js"></script>
     <link href="./Widgets/widgets.css" rel="stylesheet">
-    <style>
-        #vid {
-            position: absolute;
-            width: 456px;
-            height: 300px;
-            /* background-color: aqua; */
-            z-index: 999;
-            right: 10px;
-            top: 10%;
-            padding: 5px;
-            border: 3px solid #666;
-            background-color: black;
-        }
-
-        #img {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="./index.css">
 </head>
 
 <body>
-    <div id="cesiumContainer" style="width: 100%;height: 100%;"></div>
+    <header id="header">
+        <img class="img" src="./161044117538238 (1).png">
+        <span class="
+        title">Cesium内涝视频监测</span>
+        <span class="weather">赣州市:晴转多云</span>
+        <div class="btn-wrap">
+            <button class="btn" type="button" onclick="Rain()">降雨</button>
+            <button class="btn" onclick="Merge()">视频融合</button>
+            <button class="btn" onclick="Video()">监控</button>
+            <button class="btn" onclick="Image()">图片检测</button>
+        </div>
+    </header>
+    <div class="wrap">
+        <div id="cesiumContainer">
+        </div>
+    </div>
     <video id="trailer" muted autoplay loop crossorigin controls style="display: none;">
         <source src="./video.mp4" type="video/mp4">
     </video>
@@ -75,11 +72,12 @@
             format: "tiles",
             maximumLevel: 18
         });
+        viewer.imageryLayers.addImageryProvider(layer1);
         //加载地形
         var terrainProvider = new Cesium.CesiumTerrainProvider({
-            url: 'http://localhost:9000/terrain/ee4eb73050de11eba84a2bf6ecb72652'
+            url: 'http://localhost:3000'
         });
-        var layers = viewer.imageryLayers;
+        viewer.terrainProvider = terrainProvider;
         viewer._cesiumWidget._creditContainer.style.display = "none";
         //  传入坐标，动态创建图标
         var hospitalPin = Cesium.when(
@@ -96,7 +94,34 @@
             }
 
         );
+        var hospitalPin2 = Cesium.when(
+            pinBuilder.fromMakiIconId("camera", Cesium.Color.RED, 48),
+            function (canvas) {
+                return viewer.entities.add({
+                    name: "内涝点",
+                    position: { x: -2663117.8069646065, y: 5060598.819943117, z: 2815489.0559819075 },
+                    billboard: {
+                        image: canvas.toDataURL(),
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    },
+                });
+            }
 
+        );
+        var hospitalPin3 = Cesium.when(
+            pinBuilder.fromMakiIconId("camera", Cesium.Color.RED, 48),
+            function (canvas) {
+                return viewer.entities.add({
+                    name: "内涝点",
+                    position: { x: -2663395.8347345954, y: 5059946.813925204, z: 2816384.582437113 },
+                    billboard: {
+                        image: canvas.toDataURL(),
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    },
+                });
+            }
+
+        );
         var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
         console.log(handler)
         handler.setInputAction(function (click) {
@@ -137,10 +162,10 @@
         var floatingPoint;
 
         var activeShapePoints = [];
-        var p1 = new Cesium.Cartesian3(-2666784.832241349, 5058008.497161319, 2816674.8663126426);
-        var p2 = new Cesium.Cartesian3(-2666783.5496080844, 5057935.505610007, 2816797.2084411927);
-        var p3 = new Cesium.Cartesian3(-2666492.5037964233, 5058061.115784487, 2816853.6367744673);
-        var p4 = new Cesium.Cartesian3(-2666489.8104465194, 5058122.684123466, 2816736.2472036136);
+        var p1 = new Cesium.Cartesian3(-2663689.7462353962, 5060007.86356857, 2816023.838152685);
+        var p2 = new Cesium.Cartesian3(-2663664.711211369, 5060006.791919193, 2816049.6205705022);
+        var p3 = new Cesium.Cartesian3(-2663689.884455386, 5059980.319678125, 2816077.696495478);
+        var p4 = new Cesium.Cartesian3(-2663717.898198316, 5059978.2221952835, 2816051.782414917);
         activeShapePoints.push(p1);
         activeShapePoints.push(p2);
         activeShapePoints.push(p3);
@@ -163,41 +188,41 @@
         // let speedVector = new Cesium.Cartesian3();
         let scene = viewer.scene;
         // 起始位置
-        let position = { x: -2666889.903463367, y: 5057804.524754993, z: 2816642.0654018456 };
+        let position = { x: -2663721.684761186, y: 5059957.13301249, z: 2816086.2946636667 };
 
         // 用于设置小车方向
 
         var hpr = new Cesium.HeadingPitchRoll();
-      
+
         let fixedFrameTransforms = Cesium.Transforms.localFrameToFixedFrameGenerator('north', 'west');
         // 添加小车模型
         let carPrimitive = scene.primitives.add(Cesium.Model.fromGltf({
             url: './SampleData/models/CesiumMilkTruck/CesiumMilkTruck.glb',
-            modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(position,hpr,Cesium.Ellipsoid.WGS84,fixedFrameTransforms),
+            modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(position, hpr, Cesium.Ellipsoid.WGS84, fixedFrameTransforms),
             minimumPixelSize: 30
         }));
-        let position2 = {x: -2666344.712346242, y: 5058049.8141218955, z: 2816717.248682426};
+        let position2 = { x: -2663747.0262933653, y: 5059932.372397399, z: 2816111.8206613213 };
         var hpr2 = new Cesium.HeadingPitchRoll();
         let fixedFrameTransforms2 = Cesium.Transforms.localFrameToFixedFrameGenerator('north', 'west');
 
         let carPrimitive2 = scene.primitives.add(Cesium.Model.fromGltf({
             url: './SampleData/models/CesiumMilkTruck/CesiumMilkTruck.glb',
-            modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(position2,hpr2,Cesium.Ellipsoid.WGS84,fixedFrameTransforms2),
+            modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(position2, hpr2, Cesium.Ellipsoid.WGS84, fixedFrameTransforms2),
             minimumPixelSize: 30
         }));
-        let position3 = {x: -2667065.046786238, y: 5057715.679295137, z: 2816636.3431803053};
+        let position3 = { x: -2663644.304530702, y: 5060049.189458888, z: 2815989.6943857493 };
         var hpr3 = new Cesium.HeadingPitchRoll();
         let fixedFrameTransforms3 = Cesium.Transforms.localFrameToFixedFrameGenerator('north', 'west');
 
         let carPrimitive3 = scene.primitives.add(Cesium.Model.fromGltf({
             url: './SampleData/models/CesiumMilkTruck/CesiumMilkTruck.glb',
-            modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(position3,hpr3,Cesium.Ellipsoid.WGS84,fixedFrameTransforms3),
+            modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(position3, hpr3, Cesium.Ellipsoid.WGS84, fixedFrameTransforms3),
             minimumPixelSize: 30
         }));
 
-      const ps1 = { x: -2666889.903463367, y: 5057804.524754993, z: 2816642.0654018456 };
-      const ps2 = {x: -2666344.712346242, y: 5058049.8141218955, z: 2816717.248682426};
-      const ps3 = {x: -2667065.046786238, y: 5057715.679295137, z: 2816636.3431803053};
+        const ps1 = { x: -2666889.903463367, y: 5057804.524754993, z: 2816642.0654018456 };
+        const ps2 = { x: -2666344.712346242, y: 5058049.8141218955, z: 2816717.248682426 };
+        const ps3 = { x: -2667065.046786238, y: 5057715.679295137, z: 2816636.3431803053 };
         //查看位置
         // handler.setInputAction(function (event) {
         //     //1.椭球面坐标:获取当前点击视线与椭球面相交处的坐标，在加载地形的场景上获取的坐标有误差
@@ -216,53 +241,113 @@
         //     }
         // }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         //控制小车移动
-        let s1,s2,s3;
+        let s1, s2, s3;
         let flag = false;
-      createCar = ()=>{
-        s1 =  setInterval(() => {
-            let radian = Cesium.Math.toRadians(280);
-            let speed = 2;
-            let speedVector = new Cesium.Cartesian3();
-            hpr.heading = radian;
-            speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X,speed,speedVector);
-            positions = Cesium.Matrix4.multiplyByPoint(carPrimitive.modelMatrix ,speedVector, position);
-            Cesium.Transforms.headingPitchRollToFixedFrame(positions,hpr,Cesium.Ellipsoid.WGS84,fixedFrameTransforms,carPrimitive.modelMatrix);
-        }, 100);
-         s2 =  setInterval(() => {
-            let radian = Cesium.Math.toRadians(100);
-            hpr2.heading = radian;
-            let speed = 2;
-            let speedVector = new Cesium.Cartesian3();
-            speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X,speed,speedVector);
-            positions2 = Cesium.Matrix4.multiplyByPoint(carPrimitive2.modelMatrix ,speedVector, position2);
-            Cesium.Transforms.headingPitchRollToFixedFrame(positions2,hpr2,Cesium.Ellipsoid.WGS84,fixedFrameTransforms2,carPrimitive2.modelMatrix);
-        }, 100);
-         s3 =  setInterval(() => {
-            let radian = Cesium.Math.toRadians(280);
-            hpr3.heading = radian;
-            let speed = 2;
-            let speedVector = new Cesium.Cartesian3();
-            speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X,speed,speedVector);
-            positions3 = Cesium.Matrix4.multiplyByPoint(carPrimitive3.modelMatrix ,speedVector, position3);
-          
-            Cesium.Transforms.headingPitchRollToFixedFrame(positions3,hpr3,Cesium.Ellipsoid.WGS84,fixedFrameTransforms3,carPrimitive3.modelMatrix);
-        }, 100);   
-      }
-           createCar()
-    //   setInterval(() => {
-    //     clearInterval(s1);
-    //     clearInterval(s2);
-    //     clearInterval(s3);
-    //     // let modelMatrix = Cesium.Transforms.headingPitchRollToFixedFrame(position,hpr,Cesium.Ellipsoid.WGS84,fixedFrameTransforms)
-    //     // carPrimitive._modelMatrix = modelMatrix
-    //     // console.log(carPrimitive)
-    //     console.log(position3)
-    //     position3 = ps3;
-    //     console.log(ps3)
-    //     console.log(position3)
-    //     createCar();
-    //   }, 5000);
+        createCar = () => {
+            s1 = setInterval(() => {
+                let radian = Cesium.Math.toRadians(232);
+                let speed = 2;
+                let speedVector = new Cesium.Cartesian3();
+                hpr.heading = radian;
+                speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X, speed, speedVector);
+                positions = Cesium.Matrix4.multiplyByPoint(carPrimitive.modelMatrix, speedVector, position);
+                Cesium.Transforms.headingPitchRollToFixedFrame(positions, hpr, Cesium.Ellipsoid.WGS84, fixedFrameTransforms, carPrimitive.modelMatrix);
+            }, 100);
+            s2 = setInterval(() => {
+                let radian = Cesium.Math.toRadians(232);
+                hpr2.heading = radian;
+                let speed = 2;
+                let speedVector = new Cesium.Cartesian3();
+                speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X, speed, speedVector);
+                positions2 = Cesium.Matrix4.multiplyByPoint(carPrimitive2.modelMatrix, speedVector, position2);
+                Cesium.Transforms.headingPitchRollToFixedFrame(positions2, hpr2, Cesium.Ellipsoid.WGS84, fixedFrameTransforms2, carPrimitive2.modelMatrix);
+            }, 100);
+            s3 = setInterval(() => {
+                let radian = Cesium.Math.toRadians(52);
+                hpr3.heading = radian;
+                let speed = 2;
+                let speedVector = new Cesium.Cartesian3();
+                speedVector = Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.UNIT_X, speed, speedVector);
+                positions3 = Cesium.Matrix4.multiplyByPoint(carPrimitive3.modelMatrix, speedVector, position3);
 
+                Cesium.Transforms.headingPitchRollToFixedFrame(positions3, hpr3, Cesium.Ellipsoid.WGS84, fixedFrameTransforms3, carPrimitive3.modelMatrix);
+            }, 100);
+        }
+        createCar()
+        //   setInterval(() => {
+        //     clearInterval(s1);
+        //     clearInterval(s2);
+        //     clearInterval(s3);
+        //     // let modelMatrix = Cesium.Transforms.headingPitchRollToFixedFrame(position,hpr,Cesium.Ellipsoid.WGS84,fixedFrameTransforms)
+        //     // carPrimitive._modelMatrix = modelMatrix
+        //     // console.log(carPrimitive)
+        //     console.log(position3)
+        //     position3 = ps3;
+        //     console.log(ps3)
+        //     console.log(position3)
+        //     createCar();
+        //   }, 5000);
+
+        //定义下雨场景 着色器\\
+        function FS_Rain() {
+            return "uniform sampler2D colorTexture;\n\
+                    varying vec2 v_textureCoordinates;\n\
+                    \n\
+                    float hash(float x){\n\
+                          return fract(sin(x*23.3)*13.13);\n\
+                    }\n\
+                    \n\
+                    void main(void){\n\
+                    \n\
+                        float time = czm_frameNumber / 60.0;\n\
+                        vec2 resolution = czm_viewport.zw;\n\
+                        \n\
+                        vec2 uv=(gl_FragCoord.xy*2.-resolution.xy)/min(resolution.x,resolution.y);\n\
+                        vec3 c=vec3(.6,.7,.8);\n\
+                        \n\
+                        float a=-.4;\n\
+                        float si=sin(a),co=cos(a);\n\
+                        uv*=mat2(co,-si,si,co);\n\
+                        uv*=length(uv+vec2(0,4.9))*.3+1.;\n\
+                        \n\
+                        float v=1.-sin(hash(floor(uv.x*100.))*2.);\n\
+                        float b=clamp(abs(sin(20.*time*v+uv.y*(5./(2.+v))))-.95,0.,1.)*20.;\n\
+                        c*=v*b; \n\
+                        \n\
+                        gl_FragColor = mix(texture2D(colorTexture, v_textureCoordinates), vec4(c,1), 0.5);  \n\
+                    }\n\
+             ";
+        }
+        var collection = viewer.scene.postProcessStages;
+        function Cancel() {
+
+            collection.removeAll();
+            console.log(collection);
+        }
+        function Rain() {
+            Cancel();
+            var fs_rain = FS_Rain();
+            var snow = new Cesium.PostProcessStage({
+                name: 'czm_rain',
+                fragmentShader: fs_rain
+            });
+            viewer.scene.skyAtmosphere.hueShift = -0.8;
+            viewer.scene.skyAtmosphere.saturationShift = -0.7;
+            viewer.scene.skyAtmosphere.brightnessShift = -0.33;
+            viewer.scene.fog.density = 0.001;
+            viewer.scene.fog.minimumBrightness = 0.8;
+            collection.add(snow)
+        }
+        function Merge() {
+            viewer.camera.setView({
+                destination: { x: -2663933.2620123085, y: 5060365.413528941, z: 2816272.8409385844 }
+            })
+        }
+          function Video() {
+            viewer.zoomTo(hospitalPin);
+            console.log(hospitalPin)
+            console.log(1)
+        }
     </script>
 </body>
 
