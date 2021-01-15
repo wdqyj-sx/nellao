@@ -248,6 +248,7 @@
                 div.appendChild(Vdiv);
                 span[0].classList.add("show");
                 echart[0].classList.add("show");
+                console.log("ok")
                 //创建 ajax对象
                 var xml = new XMLHttpRequest();
 
@@ -321,10 +322,10 @@
         var floatingPoint;
 
         var activeShapePoints = [];
-        var p1 = new Cesium.Cartesian3(-2663689.7462353962, 5060007.86356857, 2816023.838152685);
-        var p2 = new Cesium.Cartesian3(-2663664.711211369, 5060006.791919193, 2816049.6205705022);
-        var p3 = new Cesium.Cartesian3(-2663689.884455386, 5059980.319678125, 2816077.696495478);
-        var p4 = new Cesium.Cartesian3(-2663717.898198316, 5059978.2221952835, 2816051.782414917);
+        var p1 = new Cesium.Cartesian3(-2663749.204318399,  5059923.198529396,  2816135.513380771);
+        var p2 = new Cesium.Cartesian3( -2663774.665498285,  5059921.381194911,  2816107.3191526206);
+        var p3 = new Cesium.Cartesian3(-2663711.5099264495,  5059984.959525836,  2816044.6268666517);
+        var p4 = new Cesium.Cartesian3( -2663688.5159334727,  5059985.431685696,  2816068.459711196);
         activeShapePoints.push(p1);
         activeShapePoints.push(p2);
         activeShapePoints.push(p3);
@@ -383,22 +384,22 @@
         const ps2 = { x: -2666344.712346242, y: 5058049.8141218955, z: 2816717.248682426 };
         const ps3 = { x: -2667065.046786238, y: 5057715.679295137, z: 2816636.3431803053 };
         //查看位置
-        handler.setInputAction(function (event) {
-            //1.椭球面坐标:获取当前点击视线与椭球面相交处的坐标，在加载地形的场景上获取的坐标有误差
-            //var earthPosition = viewer.camera.pickEllipsoid(event.position,viewer.scene.globe.ellipsoid);
+        // handler.setInputAction(function (event) {
+        //     //1.椭球面坐标:获取当前点击视线与椭球面相交处的坐标，在加载地形的场景上获取的坐标有误差
+        //     //var earthPosition = viewer.camera.pickEllipsoid(event.position,viewer.scene.globe.ellipsoid);
 
-            //2.场景坐标:获取场景中任意点击处的对应的世界坐标，需要开启“地形深度检测”（在未开启“地形深度检测”的情况下只能在3DTile上准确获取空间坐标，开启“地形深度检测”后，viewer.scene.pickPosition 也能在非3DTile上准确获取坐标）
-            viewer.scene.globe.depthTestAgainstTerrain = true;
-            var earthPosition = viewer.scene.pickPosition(event.position);
-            console.log(earthPosition)
-            //3.地标坐标：获取点击处地球表面的世界坐标，不包括模型、倾斜摄影表面
-            // var ray = viewer.camera.getPickRay(event.position);
-            // var earthPosition = viewer.scene.globe.pick(ray, viewer.scene);
+        //     //2.场景坐标:获取场景中任意点击处的对应的世界坐标，需要开启“地形深度检测”（在未开启“地形深度检测”的情况下只能在3DTile上准确获取空间坐标，开启“地形深度检测”后，viewer.scene.pickPosition 也能在非3DTile上准确获取坐标）
+        //     viewer.scene.globe.depthTestAgainstTerrain = true;
+        //     var earthPosition = viewer.scene.pickPosition(event.position);
+        //     // console.log(earthPosition)
+        //     //3.地标坐标：获取点击处地球表面的世界坐标，不包括模型、倾斜摄影表面
+        //     // var ray = viewer.camera.getPickRay(event.position);
+        //     // var earthPosition = viewer.scene.globe.pick(ray, viewer.scene);
 
-            if (Cesium.defined(earthPosition)) {
+        //     if (Cesium.defined(earthPosition)) {
 
-            }
-        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        //     }
+        // }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         //控制小车移动
         let s1, s2, s3;
         let flag = false;
