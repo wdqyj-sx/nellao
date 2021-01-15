@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./index.css">
     <script type="text/javascript"
         src="http://api.map.baidu.com/api?v=1.0&type=webgl&ak=krkDooFgQhqdEGDXsDoDbwFrmiTw2Chy"></script>
+    <script src="./node_modules/echarts/dist/echarts.js"></script>
 </head>
 
 <body>
@@ -15,7 +16,7 @@
         <img class="img" src="./161044117538238 (1).png">
         <span class="
         title">Cesium内涝视频监测</span>
-        <span class="weather">赣州市:晴转多云</span>
+        <span class="weather">三明市:晴转多云</span>
         <div class="btn-wrap">
             <button class="btn" type="button" onclick="showRain()">降雨</button>
             <button class="btn" onclick="Merge()">视频融合</button>
@@ -27,18 +28,109 @@
         <div id="cesiumContainer">
         </div>
         <div id="mapContainer" class="mapContainer">
-            
+
         </div>
         <span class="close" onclick="Close()">X</span>
         <div class="rainCont">
-            <button class="btn btn-chirld" onclick="">选取区域</button>
-            <button class="btn btn-chirld" onclick="">开始降雨</button>
+            <button class="btn btn-chirld" onclick="Rain()">开始降雨</button>
+            <button class="btn btn-chirld" onclick="StopRain()">停止降雨</button>
         </div>
+        <div class="Echart-wrap">
+            <div id="chart1"></div>
+            <div id="chart2"></div>
+
+
+        </div>
+        <span class="video-data">
+
+        </span>
     </div>
     <video id="trailer" muted autoplay loop crossorigin controls style="display: none;">
         <source src="./video.mp4" type="video/mp4">
     </video>
     <script>
+
+        function showChart(cname, cvalue, textColor, cicleColor, valueColor, text) {
+            var myChart1 = echarts.init(document.getElementById(cname));
+            // var getvalue = [88];
+
+            option1 = {
+                title: {
+                    text: cvalue + '%',
+                    textStyle: {
+                        color: textColor,
+                        fontSize: 15
+                    },
+                    subtext: text,
+                    subtextStyle: {
+                        color: textColor,
+                        fontSize: 15
+                    },
+                    itemGap: 20,
+                    left: 'center',
+                    top: '43%'
+                },
+                tooltip: {
+                    formatter: function (params) {
+                        return '<span style="color: #28BCFE;">' + text + " " + cvalue + '%</span>';
+                    }
+                },
+                angleAxis: {
+                    max: 100,
+                    clockwise: true, // 逆时针
+                    // 隐藏刻度线
+                    show: false
+                },
+                radiusAxis: {
+                    type: 'category',
+                    show: true,
+                    axisLabel: {
+                        show: false,
+                    },
+                    axisLine: {
+                        show: false,
+
+                    },
+                    axisTick: {
+                        show: false
+                    },
+                },
+                polar: {
+                    center: ['50%', '50%'],
+                    radius: '120%' //图形大小
+                },
+                series: [{
+                    type: 'bar',
+                    data: cvalue,
+                    showBackground: true,
+                    backgroundStyle: {
+                        color: cicleColor,
+                    },
+                    coordinateSystem: 'polar',
+                    roundCap: true,
+                    barWidth: 15,
+                    itemStyle: {
+                        normal: {
+                            opacity: 1,
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                offset: 0,
+                                color: valueColor
+                            }, {
+                                offset: 1,
+                                color: '#5284DE'
+                            }]),
+                            shadowBlur: 5,
+                            shadowColor: valueColor,
+                        }
+                    },
+                }]
+            };
+            myChart1.setOption(option1);
+        }
+
+        // showChart("chart2", [88], "#ffb134", "#4f5a51", "#ffb134")
+        // showChart("chart3", [88], "#21fcd6", "#4f5a51", "#ff663e")
+
         var pinBuilder = new Cesium.PinBuilder();
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZjg5NmQzMi1lN2M3LTQxZTktOTAyYS01MDFkM2RjYTgyOGMiLCJpZCI6MzQ2NjgsImlhdCI6MTYwMDY4Mzg0OX0.vv0m2W-E8Vmi3VleFtwfTRBYdSoNdBCS-COnZVgN3Zc'
         //界面设置
@@ -133,33 +225,90 @@
 
         );
         var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-        console.log(handler)
+        // console.log(handler)
+        //定义视频数据计数器
+        let vedioSet;
         handler.setInputAction(function (click) {
 
             var pick = viewer.scene.pick(click.position);
-            //选中某模型   pick选中的对象
+            //显示视频
             if (pick && pick.id) {
 
                 var div = document.getElementById("cesiumContainer");
                 var Vdiv = document.createElement("div");
+                let echart = document.getElementsByClassName("Echart-wrap");
+                let span = document.getElementsByClassName("video-data");
                 Vdiv.id = "vid";
                 //   Vdiv.src = "http://172.16.96.216:5000/index"
                 //   console.log(Vdiv);
                 var img = document.createElement("img");
                 img.id = "img";
-                img.src = "http://172.16.96.216:5000/video_feed"
+                img.src = "http://127.0.0.1:5000/videofeed"
                 Vdiv.appendChild(img);
                 div.appendChild(Vdiv);
+                span[0].classList.add("show");
+                echart[0].classList.add("show");
+                //创建 ajax对象
+                var xml = new XMLHttpRequest();
 
-                console.log(2)
+                //设置ajax请求方式，请求地址，第三个参数为是否进行异步请求，默认为true，这里省略
+                xml.open('GET', 'http://127.0.0.1:5000/getlog');
+                xml.send();
+                xml.onload = function () {
+                    //接收服务器返回的内容
+                    // console.log(xml.responseText)
+                    let data = JSON.parse(xml.responseText);
+                    let i = 0;
+                    // console.log(span)
+                    vedioSet = setInterval(() => {
+
+                        if (i < data.length) {
+                            let items = data[i].split(" ");
+                            // console.log(items)
+                            let zhenshu = items[0];
+                            // console.log(items[2])
+                            let safes = ((items[2] == "safes,") ? items[1] : 0);
+                            let unsafes = (items[items.length - 3] == "unsafes," ? items[items.length - 4] : 0);
+                            let times = items[items.length - 1]
+                            let sp = "        ";
+                            // console.log(zhenshu, safes, unsafes, times);
+                            span[0].innerHTML = `<span class="vd">安全车辆数：</span>${safes}  <span class = "vd">危险车辆数:</span>${unsafes}  <span class = "vd">响应时间：</span>${times}`;
+                            // let value1 = parseInt( safes / (parseInt(safes) + parseInt(unsafes)));
+                            // let value2 = parseInt(unsafes / (parseInt(safes) + parseInt(unsafes))) ;
+                            // console.log(value1)
+                            // console.log(value2)
+                            // console.log(safes+unsafes)
+                            let count = parseInt(safes) + parseInt(unsafes);
+                            // console.log(count)
+                            let value1 = (parseInt(safes) / count) * 100;
+                            let value2 = parseInt(unsafes) / count * 100;
+
+                            showChart("chart1", [Math.round(value1)], "#ffb134", "#4f5a51", "#ffb134", "安全车辆")
+                            showChart("chart2", [Math.round(value2)], "#21fcd6", "#4f5a51", "#ff663e", "危险车辆")
+                            i = i + 1;
+                        }
+                        else {
+                            span[0].innerHTML = "完成检测"
+                        }
+
+                    }, 55);
+                }
+
+
 
 
             }
             else {
                 let reid = document.getElementById('vid');
+                let span = document.getElementsByClassName("video-data");
+                let echart = document.getElementsByClassName("Echart-wrap");
+
                 if (reid) {
                     reid.parentNode.removeChild(reid);
                 }
+                span[0].classList.remove("show");
+                echart[0].classList.remove("show");
+                clearInterval(vedioSet)
             }
             // return false
 
@@ -234,22 +383,22 @@
         const ps2 = { x: -2666344.712346242, y: 5058049.8141218955, z: 2816717.248682426 };
         const ps3 = { x: -2667065.046786238, y: 5057715.679295137, z: 2816636.3431803053 };
         //查看位置
-        // handler.setInputAction(function (event) {
-        //     //1.椭球面坐标:获取当前点击视线与椭球面相交处的坐标，在加载地形的场景上获取的坐标有误差
-        //     //var earthPosition = viewer.camera.pickEllipsoid(event.position,viewer.scene.globe.ellipsoid);
+        handler.setInputAction(function (event) {
+            //1.椭球面坐标:获取当前点击视线与椭球面相交处的坐标，在加载地形的场景上获取的坐标有误差
+            //var earthPosition = viewer.camera.pickEllipsoid(event.position,viewer.scene.globe.ellipsoid);
 
-        //     //2.场景坐标:获取场景中任意点击处的对应的世界坐标，需要开启“地形深度检测”（在未开启“地形深度检测”的情况下只能在3DTile上准确获取空间坐标，开启“地形深度检测”后，viewer.scene.pickPosition 也能在非3DTile上准确获取坐标）
-        //     viewer.scene.globe.depthTestAgainstTerrain = true;
-        //     var earthPosition = viewer.scene.pickPosition(event.position);
-        //     console.log(earthPosition)
-        //     //3.地标坐标：获取点击处地球表面的世界坐标，不包括模型、倾斜摄影表面
-        //     // var ray = viewer.camera.getPickRay(event.position);
-        //     // var earthPosition = viewer.scene.globe.pick(ray, viewer.scene);
+            //2.场景坐标:获取场景中任意点击处的对应的世界坐标，需要开启“地形深度检测”（在未开启“地形深度检测”的情况下只能在3DTile上准确获取空间坐标，开启“地形深度检测”后，viewer.scene.pickPosition 也能在非3DTile上准确获取坐标）
+            viewer.scene.globe.depthTestAgainstTerrain = true;
+            var earthPosition = viewer.scene.pickPosition(event.position);
+            console.log(earthPosition)
+            //3.地标坐标：获取点击处地球表面的世界坐标，不包括模型、倾斜摄影表面
+            // var ray = viewer.camera.getPickRay(event.position);
+            // var earthPosition = viewer.scene.globe.pick(ray, viewer.scene);
 
-        //     if (Cesium.defined(earthPosition)) {
+            if (Cesium.defined(earthPosition)) {
 
-        //     }
-        // }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         //控制小车移动
         let s1, s2, s3;
         let flag = false;
@@ -364,6 +513,10 @@
             viewer.scene.fog.minimumBrightness = 0.8;
             collection.add(snow)
         }
+        //停止降雨
+        function StopRain() {
+            collection.removeAll();
+        }
         function Merge() {
             viewer.camera.setView({
                 destination: { x: -2663933.2620123085, y: 5060365.413528941, z: 2816272.8409385844 }
@@ -387,52 +540,56 @@
             // console.log('一点击')
             let baiduMap = document.getElementsByClassName("mapContainer");
             let close = document.getElementsByClassName("close")
-                baiduMap[0].classList.remove("show");
-             close[0].classList.remove("show");     
+            baiduMap[0].classList.remove("show");
+            close[0].classList.remove("show");
         }
         function showRain() {
             let rainCont = document.getElementsByClassName("rainCont");
-            if(rainCont[0].classList.length>1){
+            if (rainCont[0].classList.length > 1) {
                 rainCont[0].classList.remove("show")
-            }else {
+            } else {
                 rainCont[0].classList.add("show")
             }
         }
         //设置二维地图
         var map = new BMapGL.Map("mapContainer");          // 创建地图实例 
-            var point = new BMapGL.Point(117.779651, 26.387905);  // 创建点坐标 
-            map.centerAndZoom(point, 15);                 // 初始化地图，设置中心点坐标和地图级别
-            let neilao1 = new BMapGL.Point(117.777046, 26.369197);
-            let neilao2 = new BMapGL.Point(117.767178, 26.368468);
-            let neilao3 = new BMapGL.Point(117.772262, 26.377321);
-            var marker = new BMapGL.Marker(neilao1);
-            var marker2 = new BMapGL.Marker(neilao2);
-            var marker3 = new BMapGL.Marker(neilao3);
-            map.addOverlay(marker);
-            map.addOverlay(marker2);
-            map.addOverlay(marker3);
-            let opts = {
-                width: 200,
-                height: 50,
-                title: '内涝监控点'
-            }
-            var infoWindow = new BMapGL.InfoWindow("地址：三明市如意湖湿地公园", opts);
-            var infoWindow2 = new BMapGL.InfoWindow("地址：水上乐园便民超市", opts);
-            var infoWindow3 = new BMapGL.InfoWindow("地址：金州美一城", opts);
+        var point = new BMapGL.Point(117.779651, 26.387905);  // 创建点坐标 
+        map.centerAndZoom(point, 15);                 // 初始化地图，设置中心点坐标和地图级别
+        let neilao1 = new BMapGL.Point(117.777046, 26.369197);
+        let neilao2 = new BMapGL.Point(117.767178, 26.368468);
+        let neilao3 = new BMapGL.Point(117.772262, 26.377321);
+        var marker = new BMapGL.Marker(neilao1);
+        var marker2 = new BMapGL.Marker(neilao2);
+        var marker3 = new BMapGL.Marker(neilao3);
+        map.addOverlay(marker);
+        map.addOverlay(marker2);
+        map.addOverlay(marker3);
+        let opts = {
+            width: 200,
+            height: 50,
+            title: '内涝监控点'
+        }
+        var infoWindow = new BMapGL.InfoWindow("地址：三明市如意湖湿地公园", opts);
+        var infoWindow2 = new BMapGL.InfoWindow("地址：水上乐园便民超市", opts);
+        var infoWindow3 = new BMapGL.InfoWindow("地址：金州美一城", opts);
 
-            // 创建信息窗口对象 
-            marker.addEventListener("click", function () {
-                map.openInfoWindow(infoWindow, neilao1); //开启信息窗口
-            });
-            marker2.addEventListener("click", function () {
-                map.openInfoWindow(infoWindow2, neilao2); //开启信息窗口
-            });
-            marker3.addEventListener("click", function () {
-                map.openInfoWindow(infoWindow3, neilao3); //开启信息窗口
-            });
-            map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
-            map.setHeading(64.5);   //设置地图旋转角度
-            map.setTilt(73);       //设置地图的倾斜角度
+        // 创建信息窗口对象 
+        marker.addEventListener("click", function () {
+            map.openInfoWindow(infoWindow, neilao1); //开启信息窗口
+            // window.location.href = "http://127.0.0.1:5000/"
+            window.open("http://127.0.0.1:5000/", "_blank");
+        });
+        marker2.addEventListener("click", function () {
+            map.openInfoWindow(infoWindow2, neilao2); //开启信息窗口
+        });
+        marker3.addEventListener("click", function () {
+            map.openInfoWindow(infoWindow3, neilao3); //开启信息窗口
+        });
+        map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+        map.setHeading(64.5);   //设置地图旋转角度
+        map.setTilt(73);       //设置地图的倾斜角度
+        //淹没分析
+      
     </script>
 </body>
 

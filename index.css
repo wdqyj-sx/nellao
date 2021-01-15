@@ -141,3 +141,53 @@
     background-color: #5FB878;
     
 }
+.Echart-wrap {
+    position: absolute;
+    display: none;
+    width: 320px;
+    height: 550px;
+    top: 81px;
+    bottom: 15px;
+    left: 18px;
+    background-color:#03355e;
+    border: 1px solid #666;
+    opacity: 0.8;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+   
+}
+.video-data {
+    display: none;
+    position: absolute;
+   width: 445px;
+    /* height: 50px; */
+    right: 20px;
+    top: 478px;
+    border: 1px solid #666;
+    background-color: #fff;
+    z-index: 999;
+    padding: 10px;
+    background-color: #666;
+    opacity: 0.8;
+    border-radius: 10px;
+}
+.vd {
+    /* display: block; */
+    border: 1px solid chartreuse;
+    background-color: chocolate;
+    border-radius: 10px;
+    padding: 5px;
+    margin: 10px;
+   
+    
+}
+#chart1 {
+    width: auto;
+    height: 250px;
+    /* border: 1px solid red; */
+}
+#chart2 {
+    /* border: 1px solid red; */
+    width: auto;
+    height: 250px;
+}
