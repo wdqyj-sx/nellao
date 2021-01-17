@@ -21,6 +21,7 @@
 
         .infoview {
             position: absolute;
+            display: none;
             top: 10px;
             left: 10px;
             padding: 10px 15px;
@@ -78,34 +79,35 @@
         <span class="video-data">
 
         </span>
-    </div>
-    <!-- <div class="infoview">
-        <table id="paramView" class="talbe_style">
-            <tr>
-                <td class="nametd">分析区域</td>
-                <td><button type="button" id="btnDraw" class="btn btn-default">选择区域</button></td>
-            </tr>
-            <tr>
-                <td class="nametd">最低海拔(米)</td>
-                <td><input id="minHeight" type="number" class="form-control"></td>
-            </tr>
-            <tr>
-                <td class="nametd">最高海拔(米)</td>
-                <td><input id="maxHeight" type="number" class="form-control"></td>
-            </tr>
-            <tr>
-                <td class="nametd">淹没速度(米/秒)</td>
-                <td><input id="speed" value="1" type="number" class="form-control"></td>
-            </tr>
-            <tr>
-                <td colspan="2"><button type="button" id="begin" class="btn btn-primary">开始分析</button></td>
-            </tr>
-        </table>
-        <div id="resultView" style="display:none;text-align:left">
-            <button type="button" id="clear" class="btn btn-danger"></button>
-            <label id="msg"></label>
+        <div class="infoview">
+            <table id="paramView" class="talbe_style">
+                <tr>
+                    <td class="nametd">分析区域</td>
+                    <td><button type="button" id="btnDraw" class="btn btn-default">选择区域</button></td>
+                </tr>
+                <tr>
+                    <td class="nametd">最低海拔(米)</td>
+                    <td><input id="minHeight" type="number" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td class="nametd">最高海拔(米)</td>
+                    <td><input id="maxHeight" type="number" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td class="nametd">淹没速度(米/秒)</td>
+                    <td><input id="speed" value="1" type="number" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button type="button" id="begin" class="btn btn-primary">开始分析</button></td>
+                </tr>
+            </table>
+            <div id="resultView" style="display:none;text-align:left">
+                <button type="button" id="clear" class="btn btn-danger"></button> 
+                <label id="msg"></label>
+            </div>
         </div>
-    </div> -->
+    </div>
+   
     <video id="trailer" muted autoplay loop crossorigin controls style="display: none;">
         <source src="./video.mp4" type="video/mp4">
     </video>
@@ -607,10 +609,16 @@
         }
         function showRain() {
             let rainCont = document.getElementsByClassName("rainCont");
+            let infoview = document.getElementsByClassName("infoview");
             if (rainCont[0].classList.length > 1) {
                 rainCont[0].classList.remove("show")
             } else {
                 rainCont[0].classList.add("show")
+            }
+            if (infoview[0].classList.length > 1) {
+                infoview[0].classList.remove("show")
+            } else {
+                infoview[0].classList.add("show")
             }
         }
         //设置二维地图
@@ -767,7 +775,126 @@
         //     },
         //     show: false
         // });
+        var scenes = viewer.scene, 
+            setTime,
+            _extrudedHeight,
+            drawEntity, 
+            btnDraw = document.querySelector('#btnDraw'),
+            minHeight = document.querySelector('#minHeight'),
+            maxHeight = document.querySelector('#maxHeight'),
+            speed = document.querySelector('#speed'),
+            paramView = document.querySelector('#paramView'),
+            resultView = document.querySelector('#resultView'),
+            _clear = document.querySelector('#clear'),
+            msg = document.querySelector('#msg'),
+            begin = document.querySelector('#begin');
+        btnDraw.onclick = function(){
+            var p1 = new Cesium.Cartesian3(-2663749.204318399, 5059923.198529396, 2816135.513380771);
+        var p2 = new Cesium.Cartesian3(-2663774.665498285, 5059921.381194911, 2816107.3191526206);
+        var p3 = new Cesium.Cartesian3(-2663711.5099264495, 5059984.959525836, 2816044.6268666517);
+        var p4 = new Cesium.Cartesian3(-2663688.5159334727, 5059985.431685696, 2816068.459711196);
+            var pointArr = [
+                {x:-2663749.204318399,y: 5059923.198529396,z: 2816135.513380771},
+                {x:-2663774.665498285,y: 5059921.381194911,z: 2816107.3191526206},
+                {x: -2663711.5099264495,y: 5059984.959525836,z: 2816044.6268666517},
+                {x: -2663688.5159334727,y: 5059985.431685696,z: 2816068.459711196}
+                // {x: -2628898.851777293, y: 4881185.058286148, z: 3142933.3470766437}
+            ]
+            drawEntity = viewer.entities.add({
+                name: 'polygon',
+                polygon: {
+                    hierarchy:pointArr,
+                    _extrudedHeight: new Cesium.CallbackProperty(function () {  //此处用属性回调函数，直接设置extrudedHeight会导致闪烁。
+                        _extrudedHeight += 0.1;
+                         if(_extrudedHeight>maxHeight){
+                             _extrudedHeight=maxHeight;//给个最大值
+                         }
+                         return _extrudedHeight
+                             },false),
+                    // extrudedHeight:0.0,
+                    // perPositionHeight: true,
+                    material: new Cesium.Color.fromBytes(0,191,255,100),
+                }
+            })
+            drawEntity.polygon.classificationType = Cesium.ClassificationType.CESIUM_3D_TILE;//穿透地形
+           
+            
+            console.log("drawEntity:",drawEntity)
+            var i = loadH(pointArr)
+            
+            minHeight.value = i.minHeight.toFixed(1);
+            maxHeight.value = i.maxHeight.toFixed(1);
+        }
+        
+        function loadH(_value){
+            var ArrH = []
+            for(var i=0;i<_value.length;i++){
+                if (_value[i] != null && _value[i] != undefined) {
+                    //将笛卡尔坐标转为地理坐标
+                    var cartographic = scenes.globe.ellipsoid.cartesianToCartographic(_value[i]);
+                    var longitudeString = Cesium.Math.toDegrees(cartographic.longitude);//经度
+                    var latitudeString = Cesium.Math.toDegrees(cartographic.latitude);//维度
+                    var height = Math.ceil(cartographic.height);//高度
+                    ArrH.push(height);
+                }
+            }
+            return {maxHeight:Math.max.apply(null,ArrH),minHeight:Math.min.apply(null,ArrH)}
+        }
 
+        begin.onclick = function(){
+            if (null == drawEntity) return alert("请先选择分析区域！");
+            paramView.style.display = 'none',
+            resultView.style.display = 'block';
+            var e = Number(minHeight.value),
+            t = Number(maxHeight.value),
+            i = Number(speed.value);
+
+            
+
+            setTime = window.setInterval(function(){
+                if(drawEntity._polygon._extrudedHeight == undefined){
+                    drawEntity.polygon.extrudedHeight = 0;
+                }else{
+                    _extrudedHeight = drawEntity._polygon._extrudedHeight._value
+                    if(_extrudedHeight == undefined) {extrudedHeight = 0}
+                    if(_extrudedHeight >= t){
+                        window.clearInterval(setTime)
+                    }else{
+                        _extrudedHeight += 0.1;                          
+                        console.log("_extrudedHeight:",_extrudedHeight)
+                        // 会有闪烁 
+                        drawEntity.polygon.extrudedHeight = _extrudedHeight;
+                        drawEntity.polygon.extrudedHeight.setValue(_extrudedHeight)
+                        msg.innerText = '当前高度：'+_extrudedHeight
+                        // 官方版
+                        // https://cesiumjs.org/Cesium/Apps/Sandcastle/index.html?src=CZML%20Custom%20Properties.html
+                    }
+                }
+            },1000)
+        }
+        _clear.onclick = function() {
+            console.log('_clear')
+            paramView.style.display = 'block';
+            resultView.style.display = 'none';
+            msg.innerText = '';
+            window.clearInterval(setTime)
+            viewer.entities.removeAll();
+            drawEntity = null;
+        }
+
+        var greenCylinder = viewer.entities.add({
+            name: 'Green cylinder with black outline',
+            position: Cesium.Cartesian3.fromDegrees(118.3014576747466, 29.71136324387253, 200000.0),
+            cylinder: {
+                length: 400000.0,
+                topRadius: 200000.0,
+                bottomRadius: 200000.0,
+                material: Cesium.Color.BLUE.withAlpha(0.5),
+                outline: true,
+                outlineColor: Cesium.Color.DARK_GREEN
+            },
+            show:false
+        });
     </script>
 </body>
 
